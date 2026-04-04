@@ -1,76 +1,94 @@
 #!/bin/bash
 # ============================================
 # macOS Dev Environment Setup Script
-# Configures: Fish, Starship, Ghostty, VS Code
+# Usage:
+#   ./setup-mac-dev.sh terminal    - Fish + Starship + Ghostty
+#   ./setup-mac-dev.sh vscode      - VS Code settings + extensions
+#   ./setup-mac-dev.sh all         - Everything (default)
 # ============================================
 
 set -e
 
-echo "🚀 Starting macOS dev environment setup..."
+MODE="${1:-all}"
 
-# ============================================
-# 1. Homebrew (skip if already installed)
-# ============================================
-if ! command -v brew &> /dev/null; then
-    echo "📦 Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-else
-    echo "✅ Homebrew already installed"
+usage() {
+    echo "Usage: $0 [terminal|vscode|all]"
+    echo ""
+    echo "  terminal  - Install & configure Fish, Starship, Ghostty"
+    echo "  vscode    - Configure VS Code settings & install extensions"
+    echo "  all       - Run both (default)"
+    exit 1
+}
+
+if [[ "$MODE" != "terminal" && "$MODE" != "vscode" && "$MODE" != "all" ]]; then
+    usage
 fi
 
 # ============================================
-# 2. Install packages via Homebrew
+# Shared: Homebrew & Font
 # ============================================
-echo "📦 Installing packages..."
-brew install fish starship
+setup_shared() {
+    # Homebrew
+    if ! command -v brew &> /dev/null; then
+        echo "📦 Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    else
+        echo "✅ Homebrew already installed"
+    fi
 
-# Ghostty (requires tap)
-if ! command -v ghostty &> /dev/null; then
-    echo "📦 Installing Ghostty..."
-    brew install --cask ghostty
-else
-    echo "✅ Ghostty already installed"
-fi
-
-# ============================================
-# 3. Set Fish as default shell
-# ============================================
-FISH_PATH=$(which fish)
-if [ "$SHELL" != "$FISH_PATH" ]; then
-    echo "🐟 Setting Fish as default shell..."
-    chsh -s "$FISH_PATH"
-else
-    echo "✅ Fish is already default shell"
-fi
+    # Font
+    echo "🔤 Installing JetBrainsMono Nerd Font..."
+    brew install --cask font-jetbrains-mono-nerd-font 2>/dev/null || echo "⚠️  Font may already be installed"
+}
 
 # ============================================
-# 4. Configure Fish Shell
+# Terminal: Fish + Starship + Ghostty
 # ============================================
-echo "🐟 Configuring Fish..."
-mkdir -p ~/.config/fish
+setup_terminal() {
+    echo ""
+    echo "🖥️  Setting up terminal environment..."
 
-cat > ~/.config/fish/config.fish << 'FISH_EOF'
+    # Install packages
+    echo "📦 Installing Fish, Starship, Ghostty..."
+    brew install fish starship
+
+    if ! command -v ghostty &> /dev/null; then
+        echo "📦 Installing Ghostty..."
+        brew install --cask ghostty
+    else
+        echo "✅ Ghostty already installed"
+    fi
+
+    # Set Fish as default shell
+    FISH_PATH=$(which fish)
+    if [ "$SHELL" != "$FISH_PATH" ]; then
+        echo "🐟 Setting Fish as default shell..."
+        chsh -s "$FISH_PATH"
+    else
+        echo "✅ Fish is already default shell"
+    fi
+
+    # Configure Fish
+    echo "🐟 Configuring Fish..."
+    mkdir -p ~/.config/fish
+    cat > ~/.config/fish/config.fish << 'FISH_EOF'
 if status is-interactive
     starship init fish | source
     # Commands to run in interactive sessions can go here
 end
 FISH_EOF
+    echo "✅ Fish configured"
 
-echo "✅ Fish configured"
-
-# ============================================
-# 5. Configure Starship Prompt
-# ============================================
-echo "⭐ Configuring Starship..."
-mkdir -p ~/.config
-
-cat > ~/.config/starship.toml << 'STARSHIP_EOF'
+    # Configure Starship
+    echo "⭐ Configuring Starship..."
+    mkdir -p ~/.config
+    cat > ~/.config/starship.toml << 'STARSHIP_EOF'
 # Starship Configuration
 
 [aws]
 symbol = "🅰 "
-format = "on [$symbol($profile )(\($region\) )]($style)"
+format = "on [$symbol($profile )(\\($region\\) )]($style)"
 style = "bold blue"
 
 [bun]
@@ -109,7 +127,7 @@ style = "bold lavender"
 format = "via [$symbol ]($style)"
 
 [elixir]
-format = 'via [$symbol($version \(OTP $otp_version\) )]($style)'
+format = 'via [$symbol($version \\(OTP $otp_version\\) )]($style)'
 
 [elm]
 format = "via [$symbol($version )]($style)"
@@ -118,7 +136,7 @@ format = "via [$symbol($version )]($style)"
 format = "via [$symbol($version )]($style)"
 
 [gcloud]
-format = 'on [$symbol$account(@$domain)(\($region\))]($style) '
+format = 'on [$symbol$account(@$domain)(\\($region\\))]($style) '
 
 [git_branch]
 format = "on [$symbol$branch(:$remote_branch)]($style) "
@@ -175,7 +193,7 @@ format = "via [$symbol($version )]($style)"
 format = "via [$symbol($version )]($style)"
 
 [nix_shell]
-format = "via [$symbol$state( \($name\))]($style) "
+format = "via [$symbol$state( \\($name\\))]($style) "
 
 [nodejs]
 symbol = ""
@@ -183,13 +201,13 @@ style = "bold blue"
 format = "via [$symbol$version ]($style)"
 
 [ocaml]
-format = "via [$symbol($version )(\($switch_indicator$switch_name\) )]($style)"
+format = "via [$symbol($version )(\\($switch_indicator$switch_name\\) )]($style)"
 
 [opa]
 format = "via [$symbol($version )]($style)"
 
 [openstack]
-format = "on [$symbol$cloud(\($project\))]($style) "
+format = "on [$symbol$cloud(\\($project\\))]($style) "
 
 [os]
 format = "[$symbol]($style)"
@@ -215,7 +233,7 @@ format = "via [$symbol$stack]($style) "
 format = "via [$symbol($version )]($style)"
 
 [python]
-format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\\($virtualenv\\) )]($style)'
 
 [raku]
 format = "via [🦋 $name($version )]($style)"
@@ -273,16 +291,12 @@ disabled = false
 success_symbol = '[➜](bold green)'
 error_symbol = '[❯](bold red)'
 STARSHIP_EOF
+    echo "✅ Starship configured"
 
-echo "✅ Starship configured"
-
-# ============================================
-# 6. Configure Ghostty Terminal
-# ============================================
-echo "👻 Configuring Ghostty..."
-mkdir -p ~/.config/ghostty
-
-cat > ~/.config/ghostty/config << 'GHOSTTY_EOF'
+    # Configure Ghostty
+    echo "👻 Configuring Ghostty..."
+    mkdir -p ~/.config/ghostty
+    cat > ~/.config/ghostty/config << 'GHOSTTY_EOF'
 # Ghostty Configuration
 # Reference: https://ghostty.org/docs/config/reference
 
@@ -323,20 +337,24 @@ mouse-hide-while-typing = true
 adjust-cursor-thickness = 2
 bold-is-bright = true
 GHOSTTY_EOF
+    echo "✅ Ghostty configured"
 
-echo "✅ Ghostty configured"
+    echo ""
+    echo "🎉 Terminal setup complete! Restart your terminal to apply changes."
+}
 
 # ============================================
-# 7. Configure VS Code
+# VS Code: Settings + Extensions
 # ============================================
-echo "📝 Configuring VS Code..."
+setup_vscode() {
+    echo ""
+    echo "📝 Setting up VS Code..."
 
-# Create VS Code settings directory
-VSCODE_DIR="$HOME/Library/Application Support/Code/User"
-mkdir -p "$VSCODE_DIR"
+    VSCODE_DIR="$HOME/Library/Application Support/Code/User"
+    mkdir -p "$VSCODE_DIR"
 
-# Write settings.json
-cat > "$VSCODE_DIR/settings.json" << 'VSCODE_SETTINGS_EOF'
+    # Write settings.json
+    cat > "$VSCODE_DIR/settings.json" << 'VSCODE_SETTINGS_EOF'
 {
   // ========== 信任设置 ==========
   "security.workspace.trust.untrustedFiles": "open",
@@ -588,70 +606,63 @@ cat > "$VSCODE_DIR/settings.json" << 'VSCODE_SETTINGS_EOF'
   "diffEditor.maxComputationTime": 20000
 }
 VSCODE_SETTINGS_EOF
+    echo "✅ VS Code settings configured"
 
-echo "✅ VS Code settings configured"
+    # Install extensions
+    echo "📦 Installing VS Code extensions..."
+    EXTENSIONS=(
+        "alefragnani.project-manager"
+        "anthropic.claude-code"
+        "aone.aone-copilot"
+        "catppuccin.catppuccin-vsc"
+        "catppuccin.catppuccin-vsc-icons"
+        "codezombiech.gitignore"
+        "dbaeumer.vscode-eslint"
+        "eamodio.gitlens"
+        "formulahendry.auto-close-tag"
+        "formulahendry.auto-rename-tag"
+        "gbodeen.partial-diff-2"
+        "github.copilot-chat"
+        "golang.go"
+        "gruntfuggly.todo-tree"
+        "humao.rest-client"
+        "ms-ceintl.vscode-language-pack-zh-hans"
+        "ms-python.debugpy"
+        "ms-python.python"
+        "ms-python.vscode-pylance"
+        "ms-python.vscode-python-envs"
+        "oderwat.indent-rainbow"
+        "thang-nm.catppuccin-perfect-icons"
+        "usernamehw.errorlens"
+        "vibe-island.terminal-focus"
+        "yzhang.markdown-all-in-one"
+        "ziyasal.vscode-open-in-github"
+    )
 
-# ============================================
-# 8. Install VS Code Extensions
-# ============================================
-echo "📦 Installing VS Code extensions..."
+    for ext in "${EXTENSIONS[@]}"; do
+        echo "  Installing $ext..."
+        code --install-extension "$ext" --force 2>/dev/null || echo "  ⚠️  Failed to install $ext"
+    done
+    echo "✅ VS Code extensions installed"
 
-EXTENSIONS=(
-    "alefragnani.project-manager"
-    "anthropic.claude-code"
-    "aone.aone-copilot"
-    "catppuccin.catppuccin-vsc"
-    "catppuccin.catppuccin-vsc-icons"
-    "codezombiech.gitignore"
-    "dbaeumer.vscode-eslint"
-    "eamodio.gitlens"
-    "formulahendry.auto-close-tag"
-    "formulahendry.auto-rename-tag"
-    "gbodeen.partial-diff-2"
-    "github.copilot-chat"
-    "golang.go"
-    "gruntfuggly.todo-tree"
-    "humao.rest-client"
-    "ms-ceintl.vscode-language-pack-zh-hans"
-    "ms-python.debugpy"
-    "ms-python.python"
-    "ms-python.vscode-pylance"
-    "ms-python.vscode-python-envs"
-    "oderwat.indent-rainbow"
-    "thang-nm.catppuccin-perfect-icons"
-    "usernamehw.errorlens"
-    "vibe-island.terminal-focus"
-    "yzhang.markdown-all-in-one"
-    "ziyasal.vscode-open-in-github"
-)
-
-for ext in "${EXTENSIONS[@]}"; do
-    echo "  Installing $ext..."
-    code --install-extension "$ext" --force 2>/dev/null || echo "  ⚠️  Failed to install $ext (VS Code CLI may not be in PATH)"
-done
-
-echo "✅ VS Code extensions installed"
-
-# ============================================
-# 9. Install JetBrainsMono Nerd Font
-# ============================================
-echo "🔤 Installing JetBrainsMono Nerd Font..."
-brew install --cask font-jetbrains-mono-nerd-font 2>/dev/null || echo "⚠️  Font may already be installed"
+    echo ""
+    echo "🎉 VS Code setup complete!"
+}
 
 # ============================================
-# Done
+# Main
 # ============================================
+echo "🚀 macOS Dev Environment Setup"
+echo "   Mode: $MODE"
+
+if [[ "$MODE" == "all" || "$MODE" == "terminal" ]]; then
+    setup_shared
+    setup_terminal
+fi
+
+if [[ "$MODE" == "all" || "$MODE" == "vscode" ]]; then
+    setup_vscode
+fi
+
 echo ""
-echo "🎉 Setup complete!"
-echo ""
-echo "Summary:"
-echo "  ✅ Homebrew installed"
-echo "  ✅ Fish shell installed & set as default"
-echo "  ✅ Starship prompt configured"
-echo "  ✅ Ghostty terminal configured"
-echo "  ✅ VS Code settings configured"
-echo "  ✅ VS Code extensions installed"
-echo "  ✅ JetBrainsMono Nerd Font installed"
-echo ""
-echo "⚠️  Please restart your terminal for changes to take effect."
-echo "⚠️  If VS Code CLI wasn't found, install extensions manually or add 'code' to PATH."
+echo "🎉 All done!"

@@ -1,6 +1,6 @@
 # macOS Dev Setup
 
-一键配置 macOS 开发环境的启动脚本。
+一键配置 macOS 开发环境的启动脚本。支持按需选择安装终端配置或 VS Code 配置。
 
 ## 配置内容
 
@@ -16,34 +16,45 @@
 
 ```bash
 # 克隆仓库
-git clone <your-repo-url>
-cd mac-dev-setup
+git clone https://github.com/yxm666/mac_dev_setup.git
+cd mac_dev_setup
 
-# 赋予执行权限并运行
+# 赋予执行权限
 chmod +x setup-mac-dev.sh
-./setup-mac-dev.sh
 ```
 
-## 脚本做了什么
+## 使用方式
 
-1. **Homebrew** — 未安装则自动安装
-2. **包管理** — 安装 Fish、Starship、Ghostty
-3. **Shell** — 将 Fish 设为默认 shell
-4. **配置文件** — 写入 `~/.config/fish/config.fish`、`~/.config/starship.toml`、`~/.config/ghostty/config`
-5. **VS Code** — 写入 `settings.json` 并批量安装扩展
-6. **字体** — 安装 JetBrainsMono Nerd Font
+脚本支持三种模式，按需选择：
 
-## 自定义
+### 1. 终端配置（Fish + Starship + Ghostty）
 
-脚本内所有配置文件都使用 heredoc 写入，你可以直接修改对应段落：
+```bash
+./setup-mac-dev.sh terminal
+```
 
-- **Ghostty 主题/字体** → 编辑脚本中 `GHOSTTY_EOF` 部分
-- **Starship prompt** → 编辑 `STARSHIP_EOF` 部分
-- **VS Code 设置** → 编辑 `VSCODE_SETTINGS_EOF` 部分
-- **扩展列表** → 编辑 `EXTENSIONS` 数组
+安装 Fish shell、Starship prompt、Ghostty 终端，并写入配置文件。
+
+### 2. VS Code 配置
+
+```bash
+./setup-mac-dev.sh vscode
+```
+
+写入 VS Code `settings.json` 并批量安装扩展。
+
+### 3. 全部配置（默认）
+
+```bash
+./setup-mac-dev.sh
+# 或
+./setup-mac-dev.sh all
+```
+
+同时执行终端配置和 VS Code 配置。
 
 ## 注意事项
 
-- 运行后需要**重启终端**让 Fish 和 Starship 生效
+- 运行终端配置后需要**重启终端**让 Fish 和 Starship 生效
 - VS Code 扩展安装依赖 `code` CLI，如果没找到需要先打开 VS Code 安装 command line tool（`Cmd+Shift+P` → `Shell Command: Install 'code' command in PATH`）
 - 脚本中包含的 token/密钥（如 Copilot token）建议在新机器上确认有效性
