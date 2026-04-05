@@ -77,6 +77,7 @@ if status is-interactive
     starship init fish | source
     # Commands to run in interactive sessions can go here
 end
+export PATH="$HOME/.local/bin:$PATH"
 FISH_EOF
     echo "✅ Fish configured"
 
@@ -84,212 +85,201 @@ FISH_EOF
     echo "⭐ Configuring Starship..."
     mkdir -p ~/.config
     cat > ~/.config/starship.toml << 'STARSHIP_EOF'
-# Starship Configuration
+"$schema" = 'https://starship.rs/config-schema.json'
 
-[aws]
-symbol = "🅰 "
-format = "on [$symbol($profile )(\\($region\\) )]($style)"
-style = "bold blue"
+format = """
+[](red)\
+$os\
+$username\
+[](bg:peach fg:red)\
+$directory\
+[](bg:yellow fg:peach)\
+$git_branch\
+$git_status\
+[](fg:yellow bg:green)\
+$c\
+$rust\
+$golang\
+$nodejs\
+$php\
+$java\
+$kotlin\
+$haskell\
+$python\
+[](fg:green bg:sapphire)\
+$conda\
+[](fg:sapphire bg:lavender)\
+$time\
+[ ](fg:lavender)\
+$cmd_duration\
+$line_break\
+$character"""
 
-[bun]
-format = "via [$symbol($version )]($style)"
-
-[c]
-symbol = ""
-style = "bold blue"
-format = "via [$symbol$version ]($style)"
-
-[cmake]
-format = "via [$symbol($version )]($style)"
-
-[cmd_duration]
-min_time = 5000
-format = "[took $duration ](bold subtext0)"
-
-# Increase command timeout to prevent Java version check from timing out
-command_timeout = 10000
-
-[conda]
-format = "[$symbol$environment ]($style)"
-
-[dart]
-format = "via [$symbol($version )]($style)"
-
-[directory]
-style = "bold yellow"
-format = "[in $path ]($style)"
-truncation_length = 3
-truncation_symbol = "'…/'"
-
-[docker_context]
-symbol = ""
-style = "bold lavender"
-format = "via [$symbol ]($style)"
-
-[elixir]
-format = 'via [$symbol($version \\(OTP $otp_version\\) )]($style)'
-
-[elm]
-format = "via [$symbol($version )]($style)"
-
-[erlang]
-format = "via [$symbol($version )]($style)"
-
-[gcloud]
-format = 'on [$symbol$account(@$domain)(\\($region\\))]($style) '
-
-[git_branch]
-format = "on [$symbol$branch(:$remote_branch)]($style) "
-style = "bold mauve"
-symbol = "✨"
-
-[git_status]
-format = "([$all_status$ahead_behind]($style)) "
-style = "bold red"
-ahead = ""
-behind = ""
-conflicted = ""
-deleted = ""
-modified = ""
-renamed = ""
-staged = ""
-stashed = ""
-untracked = ""
-
-[golang]
-symbol = "🐭"
-style = "bold blue"
-format = "via [$symbol$version ]($style)"
-
-[haskell]
-format = "via [$symbol($version )]($style)"
-
-[hg_branch]
-format = "on [$symbol$branch]($style)"
-
-[java]
-symbol = "☕️"
-style = "bold blue"
-format = "via [$symbol$version ]($style)"
-
-[julia]
-format = "via [$symbol($version )]($style)"
-
-[kotlin]
-symbol = "💎"
-style = "bold blue"
-format = "via [$symbol$version ]($style)"
-
-[lua]
-format = "via [$symbol($version )]($style)"
-
-[memory_usage]
-format = "via [$symbol${ram}( | $swap)($system_memory) ]($style)"
-
-[meson]
-format = "via [$symbol($version )]($style)"
-
-[nim]
-format = "via [$symbol($version )]($style)"
-
-[nix_shell]
-format = "via [$symbol$state( \\($name\\))]($style) "
-
-[nodejs]
-symbol = ""
-style = "bold blue"
-format = "via [$symbol$version ]($style)"
-
-[ocaml]
-format = "via [$symbol($version )(\\($switch_indicator$switch_name\\) )]($style)"
-
-[opa]
-format = "via [$symbol($version )]($style)"
-
-[openstack]
-format = "on [$symbol$cloud(\\($project\\))]($style) "
+palette = 'catppuccin_mocha'
 
 [os]
-format = "[$symbol]($style)"
+disabled = false
+style = "bg:red fg:crust"
 
-[package]
-format = "is [$symbol$version ]($style)"
+[os.symbols]
+Windows = ""
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "👨‍🚀"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+AOSC = ""
+Arch = "󰣇"
+Artix = "󰣇"
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
 
-[perl]
-format = "via [$symbol($version )]($style)"
+[username]
+show_always = true
+style_user = "bg:red fg:crust"
+style_root = "bg:red fg:crust"
+format = '[ $user]($style)'
 
-[php]
-symbol = ""
-style = "bold blue"
-format = "via [$symbol$version ]($style)"
+[directory]
+style = "bg:peach fg:crust"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
 
-[pijul_channel]
-format = "on [$symbol$branch ]($style)"
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = "󰝚 "
+"Pictures" = " "
+"Developer" = "󰲋 "
 
-[pulumi]
-format = "via [$symbol$stack]($style) "
+[git_branch]
+symbol = ""
+style = "bg:yellow"
+format = '[[ $symbol $branch ](fg:crust bg:yellow)]($style)'
 
-[purescript]
-format = "via [$symbol($version )]($style)"
+[git_status]
+style = "bg:yellow"
+format = '[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)'
 
-[python]
-format = 'via [${symbol}${pyenv_prefix}(${version} )(\\($virtualenv\\) )]($style)'
+[nodejs]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[raku]
-format = "via [🦋 $name($version )]($style)"
-
-[red]
-format = "via [$symbol($version )]($style)"
-
-[ruby]
-format = "via [$symbol($version )]($style)"
+[c]
+symbol = " "
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
 [rust]
-symbol = ""
-style = "bold blue"
-format = "via [$symbol$version ]($style)"
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[scala]
-format = "via [$symbol($version )]($style)"
+[golang]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[spack]
-format = "via [$symbol$environment]($style) "
+[php]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[sudo]
-format = "[$symbol]($style)"
+[java]
+symbol = " "
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[swift]
-format = "via [$symbol($version )]($style)"
+[kotlin]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
 
-[terraform]
-format = "via [$symbol$workspace]($style) "
+[haskell]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+
+[python]
+symbol = ""
+style = "bg:green"
+format = '[[ $symbol( $version)(\\(#$virtualenv\\)) ](fg:crust bg:green)]($style)'
+
+[docker_context]
+symbol = ""
+style = "bg:sapphire"
+format = '[[ $symbol( $context) ](fg:crust bg:sapphire)]($style)'
+
+[conda]
+symbol = "  "
+style = "fg:crust bg:sapphire"
+format = '[$symbol$environment ]($style)'
+ignore_base = false
 
 [time]
 disabled = false
-format = "at [$time]($style) "
-time_format = "%H:%M"
-utc_time_offset = "+8"
-
-[username]
-style_user = "bold peach"
-style_root = "bold peach"
-format = "[$user ]($style)"
-
-[vagrant]
-format = "via [$symbol($version )]($style)"
-
-[vlang]
-format = "via [$symbol($version )]($style)"
-
-[zig]
-format = "via [$symbol($version )]($style)"
+time_format = "%R"
+style = "bg:lavender"
+format = '[[  $time ](fg:crust bg:lavender)]($style)'
 
 [line_break]
-disabled = false
+disabled = true
 
 [character]
-success_symbol = '[➜](bold green)'
-error_symbol = '[❯](bold red)'
+disabled = false
+success_symbol = '[❯](bold fg:green)'
+error_symbol = '[❯](bold fg:red)'
+vimcmd_symbol = '[❮](bold fg:green)'
+vimcmd_replace_one_symbol = '[❮](bold fg:lavender)'
+vimcmd_replace_symbol = '[❮](bold fg:lavender)'
+vimcmd_visual_symbol = '[❮](bold fg:yellow)'
+
+[cmd_duration]
+show_milliseconds = true
+format = " in $duration "
+style = "bg:lavender"
+disabled = false
+show_notifications = true
+min_time_to_notify = 45000
+
+[palettes.catppuccin_mocha]
+rosewater = "#f5e0dc"
+flamingo = "#f2cdcd"
+pink = "#f5c2e7"
+mauve = "#cba6f7"
+red = "#f38ba8"
+maroon = "#eba0ac"
+peach = "#fab387"
+yellow = "#f9e2af"
+green = "#a6e3a1"
+teal = "#94e2d5"
+sky = "#89dceb"
+sapphire = "#74c7ec"
+blue = "#89b4fa"
+lavender = "#b4befe"
+text = "#cdd6f4"
+subtext1 = "#bac2de"
+subtext0 = "#a6adc8"
+overlay2 = "#9399b2"
+overlay1 = "#7f849c"
+overlay0 = "#6c7086"
+surface2 = "#585b70"
+surface1 = "#45475a"
+surface0 = "#313244"
+base = "#1e1e2e"
+mantle = "#181825"
+crust = "#11111b"
 STARSHIP_EOF
     echo "✅ Starship configured"
 
@@ -323,6 +313,7 @@ cursor-opacity = 0.8
 # ============================================
 window-vsync = true
 background-opacity = 0.95
+window-save-state = always
 
 # ============================================
 # Behavior
@@ -336,6 +327,17 @@ mouse-hide-while-typing = true
 # ============================================
 adjust-cursor-thickness = 2
 bold-is-bright = true
+
+# ============================================
+# Quick Terminal
+# ============================================
+keybind = global:ctrl+cmd+space=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-size = 40%
+quick-terminal-autohide = true
+quick-terminal-screen = main
+quick-terminal-space-behavior = move
+quick-terminal-animation-duration = 0.08
 GHOSTTY_EOF
     echo "✅ Ghostty configured"
 
