@@ -32,6 +32,15 @@ print_terminal_summary() {
     done
 }
 
+print_terminal_next_steps() {
+    echo ""
+    echo "🧭 Next steps:"
+    echo "  1. Quit and reopen Ghostty to apply glass blur and theme updates."
+    echo "  2. Open a new terminal tab and verify Starship powerline symbols render correctly."
+    echo "  3. If the default shell is still not fish, run: chsh -s \"$(resolve_bin fish)\""
+    echo "  4. If prompt looks wrong, run: exec fish"
+}
+
 ensure_formula_installed() {
     local formula="$1"
     if brew list --formula "$formula" &> /dev/null; then
@@ -362,12 +371,19 @@ setup_terminal() {
     mkdir -p ~/.config/fish
     backup_file ~/.config/fish/config.fish
     cat > ~/.config/fish/config.fish << 'FISH_EOF'
+fish_add_path -m $HOME/.local/bin /opt/homebrew/bin /usr/local/bin
+
 if status is-interactive
+    if test -x /opt/homebrew/bin/brew
+        eval (/opt/homebrew/bin/brew shellenv | string collect)
+    else if test -x /usr/local/bin/brew
+        eval (/usr/local/bin/brew shellenv | string collect)
+    end
+
     if type -q starship
         starship init fish | source
     end
 end
-fish_add_path -m $HOME/.local/bin
 FISH_EOF
     echo "✅ Fish configured"
     add_terminal_summary "wrote fish config: ~/.config/fish/config.fish (starship init + PATH)"
@@ -615,7 +631,11 @@ cursor-opacity = 0.8
 # Window Settings
 # ============================================
 window-vsync = true
-background-opacity = 0.95
+background-opacity = 0.86
+background-blur = macos-glass-regular
+macos-titlebar-style = transparent
+window-theme = auto
+macos-window-shadow = true
 window-save-state = always
 
 # ============================================
@@ -643,9 +663,10 @@ quick-terminal-space-behavior = move
 quick-terminal-animation-duration = 0.08
 GHOSTTY_EOF
     echo "✅ Ghostty configured"
-    add_terminal_summary "wrote ghostty config: ~/.config/ghostty/config (theme: Catppuccin Mocha)"
+    add_terminal_summary "wrote ghostty config: ~/.config/ghostty/config (theme: Catppuccin Mocha + macOS glass blur)"
     print_terminal_status
     print_terminal_summary
+    print_terminal_next_steps
 
     echo ""
     echo "🎉 Terminal setup complete! Restart your terminal to apply changes."

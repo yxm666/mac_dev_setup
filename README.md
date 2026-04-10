@@ -13,7 +13,7 @@
 | JetBrainsMono Nerd Font | 安装开发字体 |
 | Fish | 幂等安装并尝试设置为默认 shell |
 | Starship | 写入 prompt 配置 |
-| Ghostty | 幂等安装并写入终端配置（`Catppuccin Mocha`） |
+| Ghostty | 幂等安装并写入终端配置（`Catppuccin Mocha` + macOS 毛玻璃） |
 | Zsh -> Fish 迁移 | best-effort 迁移常见 `export` / `PATH` / `alias` |
 | VS Code | 写入 `settings.json` 并安装扩展列表（编辑器/终端字体统一为 Nerd Font + Emoji fallback） |
 
@@ -54,6 +54,7 @@ chmod +x setup-mac-dev.sh
 - `~/.config/starship.toml`
 - `~/.config/ghostty/config`
 - Ghostty 字体固定为 `JetBrainsMono Nerd Font`
+- Ghostty 默认启用半透明毛玻璃（`background-blur = macos-glass-regular`）
 - 终端任务完成后打印：
 - `Terminal status`（shell / fish / starship / preset / ghostty theme）
 - `Terminal changes summary`（本次变更清单及功能）
@@ -118,6 +119,13 @@ chmod +x setup-mac-dev.sh
 - 如果 `code` 不在 PATH，先在 VS Code 执行：
 - `Cmd+Shift+P` -> `Shell Command: Install 'code' command in PATH`
 - 脚本不会写入任何明文 token/密钥，账号登录请在各扩展内手动完成
+
+## 执行后建议动作
+
+- 完成 `terminal` 模式后，完全退出并重新打开 Ghostty，使毛玻璃和主题生效
+- 新开一个终端标签页，确认 Starship powerline 符号显示正常
+- 若默认 shell 仍不是 fish，执行：`chsh -s "$(command -v fish)"`
+- 若 prompt 仍未刷新，执行：`exec fish`
 
 ## 常见问题
 
