@@ -23,6 +23,7 @@
 git clone https://github.com/yxm666/mac_dev_setup.git
 cd mac_dev_setup
 chmod +x setup-mac-dev.sh
+chmod +x restore-mac-dev-config.sh
 ```
 
 ## 使用方式
@@ -74,6 +75,28 @@ chmod +x setup-mac-dev.sh
 - 配置写入前会自动备份已有文件
 - 备份命名格式：`<原文件名>.bak.<timestamp>`
 - 这是“覆盖写入 + 自动备份”策略，不是 merge 策略
+- 脚本结束时会打印本次创建的备份清单
+- 可使用恢复脚本快速回滚：`./restore-mac-dev-config.sh`
+
+## 备份与还原（全生命周期）
+
+- 查看所有可还原备份：
+- `./restore-mac-dev-config.sh list`
+- 只查看某个目标：
+- `./restore-mac-dev-config.sh list ghostty`
+- 还原某个目标到最新备份：
+- `./restore-mac-dev-config.sh restore-latest ghostty`
+- 一次还原全部目标到各自最新备份：
+- `./restore-mac-dev-config.sh restore-latest all`
+- 按具体备份文件精确还原：
+- `./restore-mac-dev-config.sh restore-file "<backup-file>"`
+
+支持目标：
+- `fish` -> `~/.config/fish/config.fish`
+- `fish_migration` -> `~/.config/fish/conf.d/90-zsh-migration.fish`
+- `starship` -> `~/.config/starship.toml`
+- `ghostty` -> `~/.config/ghostty/config`
+- `vscode` -> `~/Library/Application Support/Code/User/settings.json`
 
 ## 幂等说明
 
@@ -126,6 +149,7 @@ chmod +x setup-mac-dev.sh
 - 新开一个终端标签页，确认 Starship powerline 符号显示正常
 - 若默认 shell 仍不是 fish，执行：`chsh -s "$(command -v fish)"`
 - 若 prompt 仍未刷新，执行：`exec fish`
+- 检查脚本结尾输出的备份清单，必要时可立即用恢复脚本回滚
 
 ## 常见问题
 

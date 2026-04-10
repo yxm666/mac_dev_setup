@@ -11,6 +11,7 @@ set -e
 
 MODE="${1:-all}"
 TERMINAL_SUMMARY=()
+CREATED_BACKUPS=()
 
 add_terminal_summary() {
     local item="$1"
@@ -39,6 +40,24 @@ print_terminal_next_steps() {
     echo "  2. Open a new terminal tab and verify Starship powerline symbols render correctly."
     echo "  3. If the default shell is still not fish, run: chsh -s \"$(resolve_bin fish)\""
     echo "  4. If prompt looks wrong, run: exec fish"
+}
+
+print_backup_summary() {
+    local i=1
+    local backup_path
+
+    echo ""
+    if [[ "${#CREATED_BACKUPS[@]}" -eq 0 ]]; then
+        echo "🗂️  Backups created in this run: none"
+        return
+    fi
+
+    echo "🗂️  Backups created in this run:"
+    for backup_path in "${CREATED_BACKUPS[@]}"; do
+        echo "  $i. $backup_path"
+        i=$((i + 1))
+    done
+    echo "  Restore helper: ./restore-mac-dev-config.sh list"
 }
 
 ensure_formula_installed() {
@@ -73,6 +92,7 @@ backup_file() {
         local backup="${target}.bak.$(date +%Y%m%d%H%M%S)"
         cp "$target" "$backup"
         echo "🗂️  Backed up $target -> $backup"
+        CREATED_BACKUPS+=("$backup")
         add_terminal_summary "backup created: $target -> $backup"
     fi
 }
@@ -1014,6 +1034,8 @@ fi
 if [[ "$MODE" == "all" || "$MODE" == "vscode" ]]; then
     setup_vscode
 fi
+
+print_backup_summary
 
 echo ""
 echo "🎉 All done!"
