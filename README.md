@@ -14,6 +14,7 @@
 | Fish | 幂等安装并尝试设置为默认 shell |
 | Starship | 写入 prompt 配置 |
 | Ghostty | 幂等安装并写入终端配置（`Catppuccin Mocha` + macOS 毛玻璃） |
+| Quick Terminal | 支持交互式选择启用/禁用，并可自定义全局快捷键 |
 | Zsh -> Fish 迁移 | best-effort 迁移常见 `export` / `PATH` / `alias` |
 | VS Code | 写入 `settings.json` 并安装扩展列表（编辑器/终端字体统一为 Nerd Font + Emoji fallback） |
 
@@ -50,6 +51,9 @@ chmod +x restore-mac-dev-config.sh
 - 尝试把 Fish 设置为默认 shell（基于真实登录 shell 检测）
 - 生成 `~/.config/fish/conf.d/90-zsh-migration.fish`，迁移常见 zsh 配置（best-effort）
 - 检查 `starship` preset `catppuccin-powerline` 是否可用
+- 配置 Ghostty `Quick Terminal` 时可交互选择：
+- 是否启用全局唤起
+- 使用哪个快捷键（默认 `ctrl+cmd+space`）
 - 写入以下配置文件：
 - `~/.config/fish/config.fish`
 - `~/.config/starship.toml`
@@ -105,6 +109,16 @@ chmod +x restore-mac-dev-config.sh
 - `ghostty` 使用 `brew list --cask` 检查后再安装
 - 已安装时会显示 `skip`，并在结尾汇总到 `Terminal changes summary`
 - 配置文件仍会按“备份后覆盖写入”执行，保证结果一致
+
+## Quick Terminal 可选参数
+
+- `GHOSTTY_QUICK_TERMINAL=ask|on|off`
+- `GHOSTTY_QUICK_TERMINAL_KEYBIND='ctrl+cmd+space'`
+
+示例：
+- 交互询问（默认）：`./setup-mac-dev.sh terminal`
+- 强制启用并指定快捷键：`GHOSTTY_QUICK_TERMINAL=on GHOSTTY_QUICK_TERMINAL_KEYBIND='ctrl+cmd+t' ./setup-mac-dev.sh terminal`
+- 强制禁用：`GHOSTTY_QUICK_TERMINAL=off ./setup-mac-dev.sh terminal`
 
 ## VS Code 默认扩展列表（当前脚本）
 
@@ -190,3 +204,9 @@ chmod +x restore-mac-dev-config.sh
 - `starship` 与终端主题常用到 Nerd Font 图标字符
 - 脚本会将 Ghostty、VS Code 编辑器和集成终端统一为 `JetBrainsMono Nerd Font`
 - 同时加入 `Apple Color Emoji` fallback，减少 emoji 显示缺失
+
+### 8. Quick Terminal 需要单独说明和选择吗？
+
+- 建议说明，并提供“启用/禁用 + 快捷键”选择
+- 脚本现在默认会在交互模式下询问
+- 无交互场景可通过环境变量预设（见上文）

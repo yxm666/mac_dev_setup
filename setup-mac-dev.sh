@@ -12,6 +12,8 @@ set -e
 MODE="${1:-all}"
 TERMINAL_SUMMARY=()
 CREATED_BACKUPS=()
+QUICK_TERMINAL_ENABLED="true"
+QUICK_TERMINAL_KEYBIND="${GHOSTTY_QUICK_TERMINAL_KEYBIND:-ctrl+cmd+space}"
 
 add_terminal_summary() {
     local item="$1"
@@ -40,6 +42,9 @@ print_terminal_next_steps() {
     echo "  2. Open a new terminal tab and verify Starship powerline symbols render correctly."
     echo "  3. If the default shell is still not fish, run: chsh -s \"$(resolve_bin fish)\""
     echo "  4. If prompt looks wrong, run: exec fish"
+    if [[ "$QUICK_TERMINAL_ENABLED" == "true" ]]; then
+        echo "  5. Quick Terminal hotkey: $QUICK_TERMINAL_KEYBIND"
+    fi
 }
 
 print_backup_summary() {
@@ -58,6 +63,55 @@ print_backup_summary() {
         i=$((i + 1))
     done
     echo "  Restore helper: ./restore-mac-dev-config.sh list"
+}
+
+configure_ghostty_quick_terminal() {
+    local mode input
+
+    mode="${GHOSTTY_QUICK_TERMINAL:-ask}"
+    QUICK_TERMINAL_ENABLED="true"
+
+    case "$mode" in
+        on|true|1|yes|y)
+            QUICK_TERMINAL_ENABLED="true"
+            ;;
+        off|false|0|no|n)
+            QUICK_TERMINAL_ENABLED="false"
+            ;;
+        ask|"")
+            if [[ -t 0 ]]; then
+                echo ""
+                read -r -p "Enable Ghostty Quick Terminal global hotkey? [Y/n]: " input
+                if [[ "$input" =~ ^([Nn]|[Nn][Oo])$ ]]; then
+                    QUICK_TERMINAL_ENABLED="false"
+                fi
+
+                if [[ "$QUICK_TERMINAL_ENABLED" == "true" ]]; then
+                    read -r -p "Quick Terminal hotkey (default: $QUICK_TERMINAL_KEYBIND): " input
+                    if [[ -n "$input" ]]; then
+                        QUICK_TERMINAL_KEYBIND="$input"
+                    fi
+                fi
+            fi
+            ;;
+        *)
+            echo "⚠️  Unknown GHOSTTY_QUICK_TERMINAL value: $mode (use ask|on|off)."
+            echo "   Falling back to: ask"
+            if [[ -t 0 ]]; then
+                echo ""
+                read -r -p "Enable Ghostty Quick Terminal global hotkey? [Y/n]: " input
+                if [[ "$input" =~ ^([Nn]|[Nn][Oo])$ ]]; then
+                    QUICK_TERMINAL_ENABLED="false"
+                fi
+            fi
+            ;;
+    esac
+
+    if [[ "$QUICK_TERMINAL_ENABLED" == "true" ]]; then
+        add_terminal_summary "quick terminal enabled (hotkey: $QUICK_TERMINAL_KEYBIND)"
+    else
+        add_terminal_summary "quick terminal disabled by user preference"
+    fi
 }
 
 ensure_formula_installed() {
@@ -309,6 +363,10 @@ usage() {
     echo "  terminal  - Install & configure Fish, Starship, Ghostty"
     echo "  vscode    - Configure VS Code settings & install extensions"
     echo "  all       - Run both (default)"
+    echo ""
+    echo "Quick Terminal options (for terminal mode):"
+    echo "  GHOSTTY_QUICK_TERMINAL=ask|on|off"
+    echo "  GHOSTTY_QUICK_TERMINAL_KEYBIND='ctrl+cmd+space'"
     exit 1
 }
 
@@ -623,6 +681,7 @@ STARSHIP_EOF
 
     # Configure Ghostty
     echo "👻 Configuring Ghostty..."
+    configure_ghostty_quick_terminal
     mkdir -p ~/.config/ghostty
     backup_file ~/.config/ghostty/config
     cat > ~/.config/ghostty/config << 'GHOSTTY_EOF'
@@ -670,18 +729,32 @@ mouse-hide-while-typing = true
 # ============================================
 adjust-cursor-thickness = 2
 bold-is-bright = true
+GHOSTTY_EOF
+
+    if [[ "$QUICK_TERMINAL_ENABLED" == "true" ]]; then
+        cat >> ~/.config/ghostty/config << GHOSTTY_QUICK_EOF
 
 # ============================================
 # Quick Terminal
 # ============================================
-keybind = global:ctrl+cmd+space=toggle_quick_terminal
+keybind = global:${QUICK_TERMINAL_KEYBIND}=toggle_quick_terminal
 quick-terminal-position = top
 quick-terminal-size = 40%
 quick-terminal-autohide = true
 quick-terminal-screen = main
 quick-terminal-space-behavior = move
 quick-terminal-animation-duration = 0.08
-GHOSTTY_EOF
+GHOSTTY_QUICK_EOF
+    else
+        cat >> ~/.config/ghostty/config << 'GHOSTTY_QUICK_DISABLED_EOF'
+
+# ============================================
+# Quick Terminal
+# ============================================
+# Disabled by setup preference.
+GHOSTTY_QUICK_DISABLED_EOF
+    fi
+
     echo "✅ Ghostty configured"
     add_terminal_summary "wrote ghostty config: ~/.config/ghostty/config (theme: Catppuccin Mocha + macOS glass blur)"
     print_terminal_status
