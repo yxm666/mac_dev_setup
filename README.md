@@ -15,7 +15,7 @@
 | Starship | 写入 prompt 配置 |
 | Ghostty | 幂等安装并写入终端配置（`Catppuccin Mocha`） |
 | Zsh -> Fish 迁移 | best-effort 迁移常见 `export` / `PATH` / `alias` |
-| VS Code | 写入 `settings.json` 并安装扩展列表 |
+| VS Code | 写入 `settings.json` 并安装扩展列表（编辑器/终端字体统一为 Nerd Font + Emoji fallback） |
 
 ## 快速开始
 
@@ -53,6 +53,7 @@ chmod +x setup-mac-dev.sh
 - `~/.config/fish/config.fish`
 - `~/.config/starship.toml`
 - `~/.config/ghostty/config`
+- Ghostty 字体固定为 `JetBrainsMono Nerd Font`
 - 终端任务完成后打印：
 - `Terminal status`（shell / fish / starship / preset / ghostty theme）
 - `Terminal changes summary`（本次变更清单及功能）
@@ -151,3 +152,9 @@ chmod +x setup-mac-dev.sh
 
 - 不需要，属于 `starship` 内置 preset
 - 脚本会自动检测是否可用并输出结果
+
+### 7. 终端字体为什么推荐 Nerd Font？
+
+- `starship` 与终端主题常用到 Nerd Font 图标字符
+- 脚本会将 Ghostty、VS Code 编辑器和集成终端统一为 `JetBrainsMono Nerd Font`
+- 同时加入 `Apple Color Emoji` fallback，减少 emoji 显示缺失

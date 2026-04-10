@@ -685,7 +685,7 @@ setup_vscode() {
   // Security: do not persist personal tokens in setup scripts.
   // ========== 编辑器基础 ==========
   "editor.fontSize": 14,
-  "editor.fontFamily": "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, monospace",
+  "editor.fontFamily": "'JetBrainsMono Nerd Font', 'Apple Color Emoji', 'Fira Code', 'Cascadia Code', Menlo, Monaco, monospace",
   "editor.fontLigatures": true,
   "editor.lineHeight": 1.6,
   "editor.minimap.enabled": false,
@@ -732,7 +732,7 @@ setup_vscode() {
   // ========== 终端配置 ==========
   "terminal.integrated.defaultProfile.osx": "fish",
   "terminal.integrated.fontSize": 13,
-  "terminal.integrated.fontFamily": "'JetBrains Mono', Menlo, monospace",
+  "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font', 'Apple Color Emoji', Menlo, monospace",
   "terminal.integrated.scrollback": 10000,
   "terminal.integrated.cursorBlinking": false,
   "terminal.integrated.cursorStyle": "line",
