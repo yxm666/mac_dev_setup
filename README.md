@@ -56,5 +56,7 @@ chmod +x setup-mac-dev.sh
 ## 注意事项
 
 - 运行终端配置后需要**重启终端**让 Fish 和 Starship 生效
+- 配置文件写入前会自动备份（例如 `settings.json.bak.<timestamp>`）
+- 如果 Fish 未在 `/etc/shells` 中，脚本会提示你手动执行 `sudo` + `chsh`
 - VS Code 扩展安装依赖 `code` CLI，如果没找到需要先打开 VS Code 安装 command line tool（`Cmd+Shift+P` → `Shell Command: Install 'code' command in PATH`）
-- 脚本中包含的 token/密钥（如 Copilot token）建议在新机器上确认有效性
+- 脚本不会写入任何明文 token/密钥，请在扩展中手动登录

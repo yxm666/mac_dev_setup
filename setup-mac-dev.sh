@@ -11,6 +11,33 @@ set -e
 
 MODE="${1:-all}"
 
+backup_file() {
+    local target="$1"
+    if [[ -f "$target" ]]; then
+        local backup="${target}.bak.$(date +%Y%m%d%H%M%S)"
+        cp "$target" "$backup"
+        echo "🗂️  Backed up $target -> $backup"
+    fi
+}
+
+init_brew_shellenv() {
+    local brew_bin=""
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+        brew_bin="/opt/homebrew/bin/brew"
+    elif [[ -x /usr/local/bin/brew ]]; then
+        brew_bin="/usr/local/bin/brew"
+    elif command -v brew &> /dev/null; then
+        brew_bin="$(command -v brew)"
+    fi
+
+    if [[ -n "$brew_bin" ]]; then
+        eval "$("$brew_bin" shellenv)"
+        return 0
+    fi
+
+    return 1
+}
+
 usage() {
     echo "Usage: $0 [terminal|vscode|all]"
     echo ""
@@ -32,14 +59,22 @@ setup_shared() {
     if ! command -v brew &> /dev/null; then
         echo "📦 Installing Homebrew..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        eval "$(/opt/homebrew/bin/brew shellenv)"
+        if ! init_brew_shellenv; then
+            echo "❌ Homebrew installed but brew command not found in expected paths."
+            exit 1
+        fi
     else
         echo "✅ Homebrew already installed"
+        init_brew_shellenv || true
     fi
 
     # Font
     echo "🔤 Installing JetBrainsMono Nerd Font..."
-    brew install --cask font-jetbrains-mono-nerd-font 2>/dev/null || echo "⚠️  Font may already be installed"
+    if brew list --cask font-jetbrains-mono-nerd-font &> /dev/null; then
+        echo "✅ Font already installed"
+    else
+        brew install --cask font-jetbrains-mono-nerd-font
+    fi
 }
 
 # ============================================
@@ -61,10 +96,20 @@ setup_terminal() {
     fi
 
     # Set Fish as default shell
-    FISH_PATH=$(which fish)
+    FISH_PATH="$(command -v fish)"
     if [ "$SHELL" != "$FISH_PATH" ]; then
         echo "🐟 Setting Fish as default shell..."
-        chsh -s "$FISH_PATH"
+        if grep -qx "$FISH_PATH" /etc/shells; then
+            if chsh -s "$FISH_PATH"; then
+                echo "✅ Fish set as default shell"
+            else
+                echo "⚠️  Failed to set Fish as default shell. Run manually: chsh -s \"$FISH_PATH\""
+            fi
+        else
+            echo "⚠️  Fish path not in /etc/shells: $FISH_PATH"
+            echo "   Run manually:"
+            echo "   sudo sh -c 'printf \"%s\\n\" \"$FISH_PATH\" >> /etc/shells' && chsh -s \"$FISH_PATH\""
+        fi
     else
         echo "✅ Fish is already default shell"
     fi
@@ -72,6 +117,7 @@ setup_terminal() {
     # Configure Fish
     echo "🐟 Configuring Fish..."
     mkdir -p ~/.config/fish
+    backup_file ~/.config/fish/config.fish
     cat > ~/.config/fish/config.fish << 'FISH_EOF'
 if status is-interactive
     starship init fish | source
@@ -84,6 +130,7 @@ FISH_EOF
     # Configure Starship
     echo "⭐ Configuring Starship..."
     mkdir -p ~/.config
+    backup_file ~/.config/starship.toml
     cat > ~/.config/starship.toml << 'STARSHIP_EOF'
 "$schema" = 'https://starship.rs/config-schema.json'
 
@@ -286,6 +333,7 @@ STARSHIP_EOF
     # Configure Ghostty
     echo "👻 Configuring Ghostty..."
     mkdir -p ~/.config/ghostty
+    backup_file ~/.config/ghostty/config
     cat > ~/.config/ghostty/config << 'GHOSTTY_EOF'
 # Ghostty Configuration
 # Reference: https://ghostty.org/docs/config/reference
@@ -356,6 +404,7 @@ setup_vscode() {
     mkdir -p "$VSCODE_DIR"
 
     # Write settings.json
+    backup_file "$VSCODE_DIR/settings.json"
     cat > "$VSCODE_DIR/settings.json" << 'VSCODE_SETTINGS_EOF'
 {
   // ========== 信任设置 ==========
@@ -375,7 +424,7 @@ setup_vscode() {
   // ========== GitLens ==========
   "gitlens.ai.model": "vscode",
   "gitlens.ai.vscode.model": "copilot:gpt-4.1",
-  "aoneCopilot.userToken": "yyU8UyLdN35inZBEl5iY",
+  // Security: do not persist personal tokens in setup scripts.
   // ========== 编辑器基础 ==========
   "editor.fontSize": 14,
   "editor.fontFamily": "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, monospace",
@@ -612,6 +661,12 @@ VSCODE_SETTINGS_EOF
 
     # Install extensions
     echo "📦 Installing VS Code extensions..."
+    if ! command -v code &> /dev/null; then
+        echo "⚠️  code CLI not found, skipping extension installation."
+        echo "   Install it from VS Code: Cmd+Shift+P -> Shell Command: Install 'code' command in PATH"
+        return
+    fi
+
     EXTENSIONS=(
         "alefragnani.project-manager"
         "anthropic.claude-code"
@@ -641,11 +696,27 @@ VSCODE_SETTINGS_EOF
         "ziyasal.vscode-open-in-github"
     )
 
+    success_count=0
+    failed_count=0
+    failed_extensions=()
+
     for ext in "${EXTENSIONS[@]}"; do
         echo "  Installing $ext..."
-        code --install-extension "$ext" --force 2>/dev/null || echo "  ⚠️  Failed to install $ext"
+        if code --install-extension "$ext" --force > /dev/null 2>&1; then
+            success_count=$((success_count + 1))
+        else
+            failed_count=$((failed_count + 1))
+            failed_extensions+=("$ext")
+            echo "  ⚠️  Failed to install $ext"
+        fi
     done
-    echo "✅ VS Code extensions installed"
+    echo "✅ VS Code extensions install complete: $success_count/${#EXTENSIONS[@]} succeeded"
+    if [[ "$failed_count" -gt 0 ]]; then
+        echo "⚠️  Failed extensions:"
+        for ext in "${failed_extensions[@]}"; do
+            echo "   - $ext"
+        done
+    fi
 
     echo ""
     echo "🎉 VS Code setup complete!"
