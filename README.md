@@ -11,9 +11,10 @@
 |---|---|
 | Homebrew | 自动检测并安装（兼容 Apple Silicon / Intel 路径） |
 | JetBrainsMono Nerd Font | 安装开发字体 |
-| Fish | 安装并尝试设置为默认 shell |
+| Fish | 幂等安装并尝试设置为默认 shell |
 | Starship | 写入 prompt 配置 |
-| Ghostty | 安装并写入终端配置 |
+| Ghostty | 幂等安装并写入终端配置（`Catppuccin Mocha`） |
+| Zsh -> Fish 迁移 | best-effort 迁移常见 `export` / `PATH` / `alias` |
 | VS Code | 写入 `settings.json` 并安装扩展列表 |
 
 ## 快速开始
@@ -44,12 +45,17 @@ chmod +x setup-mac-dev.sh
 ### `terminal`
 
 - 执行共享步骤：检查/安装 Homebrew、安装字体
-- 安装 `fish`、`starship`、`ghostty`
-- 尝试把 Fish 设置为默认 shell
+- 幂等检查并安装 `fish`、`starship`、`ghostty`（已安装则跳过）
+- 尝试把 Fish 设置为默认 shell（基于真实登录 shell 检测）
+- 生成 `~/.config/fish/conf.d/90-zsh-migration.fish`，迁移常见 zsh 配置（best-effort）
+- 检查 `starship` preset `catppuccin-powerline` 是否可用
 - 写入以下配置文件：
 - `~/.config/fish/config.fish`
 - `~/.config/starship.toml`
 - `~/.config/ghostty/config`
+- 终端任务完成后打印：
+- `Terminal status`（shell / fish / starship / preset / ghostty theme）
+- `Terminal changes summary`（本次变更清单及功能）
 
 ### `vscode`
 
@@ -66,6 +72,14 @@ chmod +x setup-mac-dev.sh
 - 配置写入前会自动备份已有文件
 - 备份命名格式：`<原文件名>.bak.<timestamp>`
 - 这是“覆盖写入 + 自动备份”策略，不是 merge 策略
+
+## 幂等说明
+
+- `terminal` 模式下：
+- `fish`、`starship` 使用 `brew list --formula` 检查后再安装
+- `ghostty` 使用 `brew list --cask` 检查后再安装
+- 已安装时会显示 `skip`，并在结尾汇总到 `Terminal changes summary`
+- 配置文件仍会按“备份后覆盖写入”执行，保证结果一致
 
 ## VS Code 默认扩展列表（当前脚本）
 
@@ -121,3 +135,19 @@ chmod +x setup-mac-dev.sh
 ### 3. 想回滚配置
 
 - 使用对应 `.bak.<timestamp>` 文件恢复即可
+
+### 4. 从 zsh 切到 fish 能 1:1 迁移吗？
+
+- 不能严格 1:1（两者语法、插件生态、启动机制不同）
+- 脚本会做 best-effort 迁移：`export`、`PATH`、`alias`
+- 复杂函数、插件框架、`compinit`/`bindkey` 等需手动调整
+
+### 5. 报错 `theme "catppuccin-mocha" not found` 怎么办？
+
+- 新脚本会写入 Ghostty 主题：`theme = "Catppuccin Mocha"`
+- 这是 Ghostty 内置主题名，避免自定义主题目录缺失导致报错
+
+### 6. `starship` 的 `catppuccin-powerline` 需要单独安装吗？
+
+- 不需要，属于 `starship` 内置 preset
+- 脚本会自动检测是否可用并输出结果
