@@ -670,7 +670,6 @@ VSCODE_SETTINGS_EOF
     EXTENSIONS=(
         "alefragnani.project-manager"
         "anthropic.claude-code"
-        "aone.aone-copilot"
         "catppuccin.catppuccin-vsc"
         "catppuccin.catppuccin-vsc-icons"
         "codezombiech.gitignore"
